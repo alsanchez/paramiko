@@ -5,3 +5,5 @@
 ./.project
 ./paramiko.tmproj
 ./test.log
+./.idea
+./paramiko.iml
