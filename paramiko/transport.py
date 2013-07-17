@@ -1688,7 +1688,7 @@ class Transport (threading.Thread):
         self.remote_version = buf
         # pull off any attached comment
         comment = ''
-        i = string.find(buf, ' ')
+        i = buf.find(' ')
         if i >= 0:
             comment = buf[i+1:]
             buf = buf[:i]
