@@ -21,13 +21,17 @@ Some unit tests for utility functions.
 """
 
 from binascii import hexlify
-import cStringIO
 import errno
 import os
 import unittest
 from Crypto.Hash import SHA
 import paramiko.util
 from paramiko.util import lookup_ssh_host_config as host_config
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from util import ParamikoTest
 
@@ -101,7 +105,7 @@ class UtilTest(ParamikoTest):
 
     def test_2_parse_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = StringIO(test_config_file)
         config = paramiko.util.parse_ssh_config(f)
         self.assertEquals(config._config,
             [{'host': ['*'], 'config': {}}, {'host': ['*'], 'config': {'identityfile': ['~/.ssh/id_rsa'], 'user': 'robey'}},
@@ -111,7 +115,7 @@ class UtilTest(ParamikoTest):
 
     def test_3_host_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = StringIO(test_config_file)
         config = paramiko.util.parse_ssh_config(f)
 
         for host, values in {
@@ -172,7 +176,7 @@ Host *.example.com
 Host *
     Port 3333
     """
-        f = cStringIO.StringIO(test_config_file)
+        f = StringIO(test_config_file)
         config = paramiko.util.parse_ssh_config(f)
         host = 'www13.example.com'
         self.assertEquals(
@@ -216,7 +220,7 @@ Host space-delimited
 Host equals-delimited
     ProxyCommand=foo bar=biz baz
 """
-        f = cStringIO.StringIO(conf)
+        f = StringIO(conf)
         config = paramiko.util.parse_ssh_config(f)
         for host in ('space-delimited', 'equals-delimited'):
             self.assertEquals(
@@ -228,7 +232,7 @@ Host equals-delimited
         """
         ProxyCommand should perform interpolation on the value
         """
-        config = paramiko.util.parse_ssh_config(cStringIO.StringIO("""
+        config = paramiko.util.parse_ssh_config(StringIO("""
 Host specific
     Port 37
     ProxyCommand host %h port %p lol
@@ -264,7 +268,7 @@ Host www13.*
 Host *
     Port 3333
     """
-        f = cStringIO.StringIO(test_config_file)
+        f = StringIO(test_config_file)
         config = paramiko.util.parse_ssh_config(f)
         host = 'www13.example.com'
         self.assertEquals(
@@ -293,7 +297,7 @@ ProxyCommand foo=bar:%h-%p
                                                      'foo=bar:proxy-without-equal-divisor-22'}
         }.items():
 
-            f = cStringIO.StringIO(test_config_file)
+            f = StringIO(test_config_file)
             config = paramiko.util.parse_ssh_config(f)
             self.assertEquals(
                 paramiko.util.lookup_ssh_host_config(host, config),
@@ -323,7 +327,7 @@ IdentityFile id_dsa22
                       'identityfile': ['id_dsa0', 'id_dsa1', 'id_dsa22']}
         }.items():
 
-            f = cStringIO.StringIO(test_config_file)
+            f = StringIO(test_config_file)
             config = paramiko.util.parse_ssh_config(f)
             self.assertEquals(
                 paramiko.util.lookup_ssh_host_config(host, config),

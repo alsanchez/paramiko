@@ -21,10 +21,14 @@ Some unit tests for public/private key objects.
 """
 
 from binascii import hexlify, unhexlify
-import StringIO
 import unittest
 from paramiko import RSAKey, DSSKey, Message, util
 from paramiko.common import rng
+
+try:
+    from cStringIO import StringIO    
+except ImportError:
+    from io import StringIO
 
 # from openssh's ssh-keygen
 PUB_RSA = 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEA049W6geFpmsljTwfvI1UmKWWJPNFI74+vNKTk4dmzkQY2yAMs6FhlvhlI8ysU4oj71ZsRYMecHbBbxdN79+JRFVYTKaLqjwGENeTd+yv4q+V2PvZv3fLnzApI3l7EJCqhWwJUHJ1jAkZzqDx0tyOL4uoZpww3nmE0kb3y21tH4c='
@@ -90,7 +94,7 @@ class KeyTest (unittest.TestCase):
         self.assertEquals(PUB_RSA.split()[1], key.get_base64())
         self.assertEquals(1024, key.get_bits())
 
-        s = StringIO.StringIO()
+        s = StringIO()
         key.write_private_key(s)
         self.assertEquals(RSA_PRIVATE_OUT, s.getvalue()) 
         s.seek(0)
@@ -115,7 +119,7 @@ class KeyTest (unittest.TestCase):
         self.assertEquals(PUB_DSS.split()[1], key.get_base64())
         self.assertEquals(1024, key.get_bits())
 
-        s = StringIO.StringIO()
+        s = StringIO()
         key.write_private_key(s)
         self.assertEquals(DSS_PRIVATE_OUT, s.getvalue())
         s.seek(0)
