@@ -272,7 +272,6 @@ class Message (object):
         return self
         
     def _add(self, i):
-        print(type(i))
         if type(i) is str:
             return self.add_string(i)
         elif type(i) is int:
