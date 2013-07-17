@@ -31,7 +31,11 @@ import warnings
 import sys
 import threading
 import unittest
-import StringIO
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 import paramiko
 from stub_sftp import StubServer, StubSFTPServer
