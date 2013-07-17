@@ -73,6 +73,39 @@ def filter_suite_by_re(suite, pattern):
             result.addTest(test)
     return result
 
+def get_test_suite(
+        verbose = False, use_sftp = True, use_loopback_sftp = True, 
+        use_big_file = True, use_pkey = True, use_transport = True, 
+        hostname = None, username = None, keyfile = None, password = None):
+    
+    if use_sftp:
+        if use_loopback_sftp:
+            SFTPTest.init_loopback()
+        else:
+            SFTPTest.init(hostname, username, keyfile, password)
+    if not use_big_file:
+        SFTPTest.set_big_file_test(False)
+
+    suite = unittest.TestSuite()
+    suite.addTest(unittest.makeSuite(MessageTest))
+    suite.addTest(unittest.makeSuite(BufferedFileTest))
+    suite.addTest(unittest.makeSuite(BufferedPipeTest))
+    suite.addTest(unittest.makeSuite(UtilTest))
+    suite.addTest(unittest.makeSuite(HostKeysTest))
+    if use_pkey:
+        suite.addTest(unittest.makeSuite(KeyTest))
+    suite.addTest(unittest.makeSuite(KexTest))
+    suite.addTest(unittest.makeSuite(PacketizerTest))
+    if use_transport:
+        suite.addTest(unittest.makeSuite(AuthTest))
+        suite.addTest(unittest.makeSuite(TransportTest))
+    suite.addTest(unittest.makeSuite(SSHClientTest))
+    if use_sftp:
+        suite.addTest(unittest.makeSuite(SFTPTest))
+    if use_big_file:
+        suite.addTest(unittest.makeSuite(BigSFTPTest))
+        
+    return suite
 
 def main():
     parser = OptionParser('usage: %prog [options]')
@@ -106,34 +139,9 @@ def main():
     options, args = parser.parse_args()
     
     # setup logging
-    paramiko.util.log_to_file('test.log')
+    paramiko.util.log_to_file('test.log')    
     
-    if options.use_sftp:
-        if options.use_loopback_sftp:
-            SFTPTest.init_loopback()
-        else:
-            SFTPTest.init(options.hostname, options.username, options.keyfile, options.password)
-        if not options.use_big_file:
-            SFTPTest.set_big_file_test(False)
-    
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(MessageTest))
-    suite.addTest(unittest.makeSuite(BufferedFileTest))
-    suite.addTest(unittest.makeSuite(BufferedPipeTest))
-    suite.addTest(unittest.makeSuite(UtilTest))
-    suite.addTest(unittest.makeSuite(HostKeysTest))
-    if options.use_pkey:
-        suite.addTest(unittest.makeSuite(KeyTest))
-    suite.addTest(unittest.makeSuite(KexTest))
-    suite.addTest(unittest.makeSuite(PacketizerTest))
-    if options.use_transport:
-        suite.addTest(unittest.makeSuite(AuthTest))
-        suite.addTest(unittest.makeSuite(TransportTest))
-    suite.addTest(unittest.makeSuite(SSHClientTest))
-    if options.use_sftp:
-        suite.addTest(unittest.makeSuite(SFTPTest))
-    if options.use_big_file:
-        suite.addTest(unittest.makeSuite(BigSFTPTest))
+    suite = get_test_suite(**vars(options))
     verbosity = 1
     if options.verbose:
         verbosity = 2
